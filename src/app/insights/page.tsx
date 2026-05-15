@@ -28,6 +28,15 @@ const mockResponses: Record<string, string> = {
     "Currently **$18,400** is recoverable from **32 stale leads**.\n\nBreakdown by priority:\n• **High priority (10 leads):** $8,200 — These leads showed strong interest but went silent in the last 7-14 days.\n• **Medium priority (14 leads):** $6,800 — Quoted but no response.\n• **Low priority (8 leads):** $3,400 — Initial inquiry only.\n\nWith your current 34% recovery rate, **AI can potentially recover ~$6,256** from these leads.\n\n**Recommendation:** Launch an immediate AI voice + SMS campaign targeting the 10 high-priority leads first.",
 };
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export default function InsightsPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -47,7 +56,7 @@ export default function InsightsPage() {
     setTimeout(() => {
       const response =
         mockResponses[userMsg] ||
-        `Based on your current data:\n\nI analyzed your business metrics and here's what I found regarding "${userMsg}":\n\n• Your overall booking rate is **41.2%** with an average move value of **$3,840**.\n• This month's booked revenue stands at **$423,900**, up 12.4% from last month.\n• **32 stale leads** worth **$18,400** are awaiting follow-up.\n\nWould you like me to dive deeper into any specific area?`;
+        `Based on your current data:\n\nI analyzed your business metrics and here's what I found regarding "${escapeHtml(userMsg)}":\n\n• Your overall booking rate is **41.2%** with an average move value of **$3,840**.\n• This month's booked revenue stands at **$423,900**, up 12.4% from last month.\n• **32 stale leads** worth **$18,400** are awaiting follow-up.\n\nWould you like me to dive deeper into any specific area?`;
       setMessages((prev) => [...prev, { role: "assistant", content: response }]);
     }, 800);
   };
@@ -101,7 +110,7 @@ export default function InsightsPage() {
                 }`}
               >
                 <div className="whitespace-pre-wrap" dangerouslySetInnerHTML={{
-                  __html: msg.content
+                  __html: escapeHtml(msg.content)
                     .replace(/\*\*(.*?)\*\*/g, '<strong class="text-foreground">$1</strong>')
                     .replace(/\n/g, '<br/>')
                 }} />
@@ -124,7 +133,7 @@ export default function InsightsPage() {
                 <button
                   key={q}
                   onClick={() => {
-                    setInput(q);
+                    setInput("");
                     setMessages((prev) => [...prev, { role: "user", content: q }]);
                     setTimeout(() => {
                       const response = mockResponses[q] || "Analyzing your data...";
